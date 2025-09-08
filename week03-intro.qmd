@@ -4,7 +4,7 @@ subtitle: "GitHub, warm-up, and a first look at mtcars"
 author: "Amber Camp" (edited by Karl Nick Matias)
 date: "2025-09-08"
 format: html
-editor: visual
+editor: visual1
 ---
 
 ## Welcome Back!
