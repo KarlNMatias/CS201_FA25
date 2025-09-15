@@ -286,7 +286,7 @@ ggplot(data = penguins_data, aes(x = flipper_length_mm, y = body_mass_g, color =
         -   Run `ggplotly(plot_name)` and explore! Edit `plot_name` accordingly
 
 ```{r, message=FALSE}
-  ggplot(data = penguins_data, aes(x = culmen_depth_mm, y = body_mass_g, fill = species)) +
+  depth_by_mass <- ggplot(data = penguins_data, aes(x = culmen_depth_mm, y = body_mass_g, fill = species)) +
   geom_boxplot() +
   geom_jitter(size = 0.5) + # adding some datapoints and jittering them
   theme_bw() + # sets overall plot theme (think background, axes, bounding box)
