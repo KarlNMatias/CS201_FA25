@@ -265,7 +265,14 @@ ggplot(data = penguins_data, aes(x = flipper_length_mm, y = body_mass_g, color =
     -   In the code chunk below create a **scatterplot** with `culmen_depth_mm` on the x axis, `body_mass_g` on the y axis, and `color` by `species` using the dataframe *penguins_data*. Give the plot the theme: `theme_bw()`. Assign a color palette with `scale_fill_viridis_d(option = "mako")`. Give the plot a title, subtitile and custom x and y axis titles.
 
 ```{r, message=FALSE}
-
+ ggplot(data = penguins_data, aes(x = body_mass_g, fill = species)) +
+  geom_histogram() +
+  theme_bw() + 
+  scale_fill_viridis_d() + # try adding option = "A", "C", "E", etc. These also have names! See documentation.
+  labs(title = "Palmer Penguins, Distribution of Flipper Length",
+       subtitle = "3 penguin species observed on three islands in the Palmer Archipelago, Antarctica",
+       x = "body mass",
+       y = "Number of Penguins")
 ```
 
 -   Part 3
@@ -279,7 +286,16 @@ ggplot(data = penguins_data, aes(x = flipper_length_mm, y = body_mass_g, color =
         -   Run `ggplotly(plot_name)` and explore! Edit `plot_name` accordingly
 
 ```{r, message=FALSE}
-
+  ggplot(data = penguins_data, aes(x = culmen_depth_mm, y = body_mass_g, fill = species)) +
+  geom_boxplot() +
+  geom_jitter(size = 0.5) + # adding some datapoints and jittering them
+  theme_bw() + # sets overall plot theme (think background, axes, bounding box)
+  scale_fill_viridis_d() +
+  labs(title = "Pengu's Bodymass by depth",
+       x = "body mass",
+       y = "culmen depth (mm)") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") +
+  coord_flip()
 ```
 
 ## Push to GitHub!
