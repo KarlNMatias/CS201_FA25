@@ -1,0 +1,153 @@
+---
+title: "Assignment 4: Exploratory Data Analysis"
+author: "Amber Camp"
+date: "`r Sys.Date()`"
+format: html
+editor: visual
+---
+
+## Overview
+
+Due: **Sunday, 9/28 11:59pm**
+
+In this assignment, you will practice Exploratory Data Analysis (EDA) by making plots from a **Kaggle dataset of your choice**.
+
+You will submit **at least 4 different plot types**, with short written interpretations for each.
+
+Part 1 is worth a total of 1 point, and Part 2 is worth 4 points (1 point for each plot & interpretation).
+
+## Part 1: Get Your Data
+
+1.  Go to [Kaggle Datasets](https://www.kaggle.com/datasets), create an account, and choose a dataset that interests you. Ensure your data has:
+    1.  At least 4 variables
+    2.  At least one categorical and one continuous variable
+    3.  I recommend data that contains at least 50-100 observations
+    4.  Tip: Open the CSV on Kaggle first and skim the columns to check that it meets these requirements
+2.  Download the dataset as a CSV file.
+3.  Place the CSV in your class R project data folder.
+4.  Read it into R with `read_csv()`.
+
+```{r, message=FALSE}
+library(tidyverse)
+card <- read_csv(here("data/Yugi_db_cleaned.csv"))
+
+card <- card %>%
+  clean_names()
+```
+
+### Describe your data
+
+Data author: Archan Ghosh · Madhurima Maji
+
+Link: <https://www.kaggle.com/datasets/archanghosh/yugioh-database>
+
+Description: The CSV contains details that we were able to capture from each card. Along with that, we have also added duplicate cards that belong to other sets and their rarity beside their file name. We have also made sure that we preserve as much as original card art for each iteration.
+
+For a guide on rarity, you can check out the YuGiOh fandom.
+
+There are some more rarities that are a mixture of these and we have also included those.
+
+### Preview your data
+
+Use some of the strategies you've learned in this class or picked up elsewhere to summarize and quickly explore your data.
+
+```{r}
+skim_data <- skimr::skim(card)
+view(skim_data)
+```
+
+### Summary stats
+
+Before you make plots, you must also:
+
+-   Show basic summaries of your dataset, including:
+
+    -   `count()` for categorical variables (to see category frequencies)
+
+    -   `mean()`, `median()`, `sd()`, `min()`, `max()` for at least one numeric variable
+
+```{r}
+summary(card)
+```
+
+Write 2–3 sentences here: What do the category counts tell you? What does the numeric summary show about spread, center, or outliers? The summary tells me that there is a lot of N/A on the data as yugioh is a card game were there are monster cards and spell cards so it is bound to be tricky as spell cards does not have the properties of monster cards therefore some of the data would be left blank or N/A.
+
+## Part 2:
+
+Create **at least 4 plots**, each of a different type. At least one of your four plots must use different variables than the others.
+
+Each plot should have:
+
+-   A title and labeled axes
+
+-   A short interpretation (2-3 sentences) underneath
+
+Use the EDA Part 3 notes as your reference. Since this is an EDA assignment, your plots can be plain, but consider adding colors, themes, or interactivity for interpretability and visual appeal if you know how.
+
+### Plot 1
+
+```{r}
+# insert code here
+card %>%
+  ggplot(aes(x = card_type)) +
+  geom_bar(fill = "lavender") +
+  theme_minimal() +
+  labs(title = "Card Types", x = "Card Type", y = "Count")
+```
+
+Interpretation:
+
+### Plot 2
+
+```{r}
+# insert code here
+card %>%
+  filter(card_type == "Monster", !is.na(level), !is.na(attribute)) %>%
+  count(attribute, level) %>%
+  ggplot(aes(x = attribute, y = level, fill = n)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  labs(
+    title = "Monster Attributes and Levels",
+    x = "Attribute",
+    y = "Monster Level",
+    fill = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Interpretation:
+
+### Plot 3
+
+```{r}
+# insert code here
+card %>%
+  ggplot(aes(x = rarity)) +
+  geom_bar(fill = "lightgreen") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Rarity", x = "Rarity", y = "Count")
+
+```
+
+Interpretation:
+
+### Plot 4
+
+```{r}
+# insert code here
+card %>%
+  filter(card_type == "Monster", !is.na(level)) %>%
+  ggplot(aes(x = level)) +
+  geom_density(fill = "darkgreen", alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Monster Levels", x = "Level", y = "Count")
+```
+
+Interpretation:
+
+## Push to GitHub to Submit!
+
+Assignment is due Sunday 9/28 at 11:59 pm.
