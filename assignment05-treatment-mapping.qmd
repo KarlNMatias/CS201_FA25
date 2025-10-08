@@ -1,6 +1,6 @@
 ---
 title: "Assignment 5: Substance Abuse Treatment Mapping"
-subtitle: "STUDENT NAME"
+subtitle: "Karl Nick Matias"
 author: "Amber Camp"
 date: "`r Sys.Date()`"
 format: html
@@ -33,7 +33,7 @@ library(urbnmapr) # access to US state/country shapefiles for mapping
 library(naniar) # tools for exploring and visualizing missing data
 library(ggiraph) # makes ggplot charts interactive
 options(scipen = 99) # turns off scientific notation
-
+library(plotly)
 ```
 
 ```{r}
@@ -47,7 +47,56 @@ Make an interactive map with `ggiraph` showing the percentage of completed treat
 Hint: Break this question down into bite-sized steps, like we did in Part 2. The `freq1_d` column contains information about use at discharge. Check your denominator carefully — should it be *all cases* or *completed cases*?
 
 ```{r}
+percent_no_use_completed_by_state <- teds_d %>%
+  group_by(stfips) %>%
+  summarize(total_completed = sum(reason == "Treatment completed", na.rm = TRUE),
+    no_use_completed = sum(reason == "Treatment completed" &
+                             freq1_d == "no use", na.rm = TRUE)) %>%
+  mutate(percentage_no_use = (no_use_completed / total_completed) * 100)
 
+summary(percent_no_use_completed_by_state)
+```
+
+```{r}
+states_map <- get_urbn_map(map = "states", sf = TRUE)
+head(states_map, 10)
+```
+
+```{r}
+percent_no_use_completed_by_state <- percent_no_use_completed_by_state %>%
+  mutate(state_fips = sprintf("%02d", stfips))
+```
+
+```{r}
+no_use_map_df <- full_join(
+  percent_no_use_completed_by_state,
+  states_map,
+  by = "state_fips")
+```
+
+```{r}
+no_use_map_df <- no_use_map_df %>%
+  mutate(percentage_bin = cut(
+    percentage_no_use,
+    breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80),
+    include.lowest = TRUE))
+```
+
+```{r}
+no_use_map_int <- ggplot(no_use_map_df) +
+  geom_sf_interactive(aes(geometry = geometry,
+                          fill = percentage_no_use,
+                          tooltip = paste(
+                            "State:", state_abbv,
+                            "<br>FIPS:", stfips,
+                            "<br>% No Use (among completed):",
+                            round(percentage_no_use, 2), "%")),
+                      color = "#ffffff", size = 0.25) +
+  labs(fill = "% No Use (Completed Treatments)") +
+  coord_sf(datum = NA) +
+  theme_minimal()
+
+girafe(ggobj = no_use_map_int)
 ```
 
 ## Question 2
@@ -63,10 +112,67 @@ Treatment outcomes can vary depending on the type of service patients receive an
 -   After making your visualizations, write a short summary (3-ish sentences) that explains the main patterns you observe. Please use full, grammatical sentences.
 
 ```{r}
+ggplot(service_summary, aes(x = services_d, y = pct_completed)) +
+  geom_segment(aes(x = services_d, xend = services_d, y = 0, yend = pct_completed),
+               color = "gray60", linewidth = 1.2) +
+  geom_point(size = 4, color = "steelblue") +
+  theme_bw() +
+  labs(
+    title = "Treatments Completed by Service Type",
+    x = "Service Type",
+    y = "% Completed"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
-Summary: (write here)
+```{r}
+ggplot(los_summary, aes(x = los, y = pct_no_use, group = 1)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  geom_point(size = 3, color = "darkblue") +
+  theme_bw() +
+  labs(
+    title = "Completed Treatments With No Use by Length of Stay",
+    x = "Length of Stay",
+    y = "% No Use & Completed"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+#create length of stay categories - short, medium, long
+teds_d <- teds_d %>%
+  mutate(los_group = case_when(los <= 30 ~ "Short (≤30 days)",
+                               los > 30 & los <= 90 ~ "Medium (31–90 days)",
+                               los > 90 ~ "Long (>90 days)",
+                               TRUE ~ "Unknown"))
+```
+
+```{r}
+#summarize % of treatments completed by service type & LoS
+service_los_summary <- teds_d %>%
+  group_by(services_d, los_group) %>%
+  summarise(total_cases = n(),
+            completed = sum(reason == "Treatment completed", na.rm = TRUE)) %>%
+  mutate(pct_completed = (completed / total_cases) * 100)
+```
+
+```{r}
+ggplot(service_los_summary, aes(x = los_group, y = pct_completed, fill = services_d)) +
+  geom_col(color = "black", fill = "steelblue") +
+  facet_wrap(~ services_d) +
+  theme_bw() +
+  labs(
+    title = "Treatments Completed by Service Type & Length of Stay",
+    x = "Length of Stay Category",
+    y = "% Completed"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+Summary: Treatment completion rates can be very different depending on the type of program and how long someone stays in it. People in residential or long-term programs usually have higher completion rates than those in outpatient or short-term programs. It also seems that the longer a person stays in treatment, the more likely they are to finish and report having “no use” at discharge. Overall, staying in treatment longer and being in more structured programs tend to lead to better results.
 
 ## Push to GitHub to Submit!
 
